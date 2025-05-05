@@ -8,11 +8,11 @@
 		<version>3.4.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.Farm2Market</groupId>
-	<artifactId>eureka-server</artifactId>
+	<groupId>com.agroconnect</groupId>
+	<artifactId>discovery-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>eureka-server</name>
-	<description>Eureka server</description>
+	<name>discovery-server</name>
+	<description>Discovery server for </description>
 	<url/>
 	<licenses>
 		<license/>
