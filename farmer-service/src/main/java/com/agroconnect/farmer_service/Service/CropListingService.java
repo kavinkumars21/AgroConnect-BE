@@ -23,6 +23,7 @@ public class CropListingService {
         listing.setPricePerKg(dto.pricePerKg());
         listing.setQuantityAvailable(dto.quantityAvailable());
         listing.setOrganic(dto.isOrganic());
+        listing.setLocation(dto.location());
         return cropListingRepository.save(listing);
     }
 

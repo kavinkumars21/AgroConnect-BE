@@ -11,6 +11,4 @@ public record CreateListingDTO(
     boolean isOrganic,
     String location
 ) {
-    public void setFarmerId(String farmerId) {
-    }
 }

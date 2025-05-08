@@ -44,6 +44,18 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
     }
 
+    @PostMapping("/register-farmer")
+    public ResponseEntity<String> registerFarmer(@RequestBody RegisterRequest request) {
+        if (userService.findByUserName(request.userName()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+        }
+        var user = new User(request.userName(),
+                passwordEncoder.encode(request.password()),
+                request.email(), request.phoneNumber(), Set.of("FARMER"));
+        userService.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 

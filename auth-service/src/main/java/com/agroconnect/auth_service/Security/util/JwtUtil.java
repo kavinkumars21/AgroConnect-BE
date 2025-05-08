@@ -1,5 +1,6 @@
 package com.agroconnect.auth_service.Security.util;
 
+import com.agroconnect.auth_service.Security.model.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,10 +19,12 @@ public class JwtUtil {
     private final long EXP_TIME = 86400000;
 
     public String generateToken(UserDetails userDetails) {
+        CustomUserDetails customUser = (CustomUserDetails) userDetails;
         return Jwts
                 .builder()
-                .setSubject(userDetails.getUsername()) // subject -> to whom the token is issued
-                .claim("roles", getUserRoles(userDetails.getAuthorities()))
+                .setSubject(customUser.getUsername())// subject -> to whom the token is issued
+                .claim("userId", customUser.getId())
+                .claim("roles", getUserRoles(customUser.getAuthorities()))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXP_TIME)) // expiring at current time + 1 day
                 .signWith(SignatureAlgorithm.HS256, SECRET)

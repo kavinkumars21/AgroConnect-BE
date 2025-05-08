@@ -10,6 +10,7 @@ import java.util.Collection;
 public class CustomUserDetails implements UserDetails {
 
     private final User user;
+    public Object getId;
 
     public CustomUserDetails(User user) {
         this.user = user;
@@ -22,6 +23,10 @@ public class CustomUserDetails implements UserDetails {
                 .stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .toList();
+    }
+
+    public String getId() {
+        return user.getId();
     }
 
     @Override

@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: farmer-service
+          uri: lb://FARMER-SERVICE
+          predicates:
+            - Path=/listings/**
+          filters:
+            - JwtAuthFilter
