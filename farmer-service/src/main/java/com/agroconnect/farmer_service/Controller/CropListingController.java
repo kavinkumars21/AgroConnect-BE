@@ -33,7 +33,6 @@ public class CropListingController {
         String token = authHeader.substring(7);
 
         List<String> roles = jwtUtil.extractRoles(token);
-        System.out.println("Extracted Roles from JWT: " + roles);
 
         if (!roles.contains("ROLE_FARMER")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User does not have FARMER role");
@@ -60,5 +59,12 @@ public class CropListingController {
     @GetMapping("/farmer/{farmerId}")
     public ResponseEntity<List<ListingResponse>> getFarmerListings(@PathVariable String farmerId) {
         return ResponseEntity.ok(cropListingService.getListingsByFarmerId(farmerId));
+    }
+
+    @PutMapping("/{productId}/reduce")
+    public ResponseEntity<String> reduceProductQuantity(@PathVariable String productId,
+                                                        @RequestParam int quantity) {
+        cropListingService.reduceQuantity(productId, quantity);
+        return ResponseEntity.ok("Product quantity reduced successfully.");
     }
 }

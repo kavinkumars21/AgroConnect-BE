@@ -31,11 +31,13 @@ public class CropListingService {
         return cropListingRepository.findAll().stream()
                 .map(listing -> new ListingResponse(
                         listing.getId(),
+                        listing.getFarmerId(),
                         listing.getCropName(),
                         listing.getCategory(),
                         listing.getPricePerKg(),
                         listing.getQuantityAvailable(),
-                        listing.isOrganic()))
+                        listing.isOrganic(),
+                        listing.getLocation()))
                 .toList();
     }
 
@@ -43,11 +45,25 @@ public class CropListingService {
         return cropListingRepository.findByFarmerId(farmerId).stream()
                 .map(listing -> new ListingResponse(
                         listing.getId(),
+                        listing.getFarmerId(),
                         listing.getCropName(),
                         listing.getCategory(),
                         listing.getPricePerKg(),
                         listing.getQuantityAvailable(),
-                        listing.isOrganic()))
+                        listing.isOrganic(),
+                        listing.getLocation()))
                 .toList();
+    }
+
+    public void reduceQuantity(String productId, int quantity) {
+        CropListing cropListing = cropListingRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (cropListing.getQuantityAvailable() < quantity) {
+            throw new RuntimeException("Insufficient quantity available");
+        }
+
+        cropListing.setQuantityAvailable(cropListing.getQuantityAvailable() - quantity);
+        cropListingRepository.save(cropListing);
     }
 }

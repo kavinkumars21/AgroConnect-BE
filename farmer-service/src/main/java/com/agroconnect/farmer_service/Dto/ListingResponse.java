@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 
 public record ListingResponse(
     String id,
+    String farmerId,
     String cropName,
     String category,
     BigDecimal pricePerKg,
     int quantityAvailable,
-    boolean isOrganic
+    boolean isOrganic,
+    String location
 ) {}
