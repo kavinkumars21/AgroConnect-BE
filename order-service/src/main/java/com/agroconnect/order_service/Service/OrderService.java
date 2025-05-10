@@ -1,15 +1,18 @@
 package com.agroconnect.order_service.Service;
 
-import com.agroconnect.order_service.Client.BuyerClient;
-import com.agroconnect.order_service.Dto.ListingSummaryDTO;
+import com.agroconnect.order_service.Client.CartServiceClient;
+import com.agroconnect.order_service.Client.FarmerServiceClient;
+import com.agroconnect.order_service.Dto.CartDTO;
+import com.agroconnect.order_service.Dto.CartItemDTO;
+import com.agroconnect.order_service.Dto.OrderItemDTO;
 import com.agroconnect.order_service.Dto.OrderRequest;
 import com.agroconnect.order_service.Dto.OrderResponse;
 import com.agroconnect.order_service.Model.Order;
+import com.agroconnect.order_service.Model.OrderItem;
 import com.agroconnect.order_service.Model.OrderStatus;
 import com.agroconnect.order_service.Repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,44 +22,59 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final BuyerClient buyerClient;
+    private final CartServiceClient cartServiceClient;
+    private final FarmerServiceClient farmerServiceClient;
 
     public OrderResponse placeOrder(OrderRequest request) {
-        // Retrieve all listings from Buyer Service
-        List<ListingSummaryDTO> listings = buyerClient.getAllListings();
-
-        // Find the specific listing by ID
-        ListingSummaryDTO listing = listings.stream()
-                .filter(l -> l.id().equals(request.listingId()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Listing not found!"));
-
-        // Check if the requested quantity is available
-        if (request.quantity() > listing.quantityAvailable()) {
-            throw new RuntimeException("Insufficient quantity available. Available: " + listing.quantityAvailable());
+        CartDTO cart = cartServiceClient.getCartByBuyerId(request.buyerId());
+        if (cart == null || cart.items().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
         }
 
-        // Reduce the listing's available quantity via Buyer Service
-        buyerClient.reduceListingQuantity(request.listingId(), request.quantity());
+        for (CartItemDTO item : cart.items()) {
+            var listing = farmerServiceClient.getListingDetails(item.listingId());
+            if(item.quantity() > listing.getFirst().quantityAvailable()) {
+                throw new RuntimeException("Insufficient stock for listing: " + item.listingId());
+            }
+        }
+        for (CartItemDTO item : cart.items()) {
+            farmerServiceClient.reduceProductQuantity(item.listingId(), item.quantity());
+        }
 
-        // Calculate total price (pricePerKg * quantity)
-        BigDecimal totalPrice = listing.pricePerKg().multiply(BigDecimal.valueOf(request.quantity()));
+        List<OrderItem> orderItems = cart.items().stream()
+                .map(item -> new OrderItem(
+                        item.listingId(),
+                        item.quantity(),
+                        item.pricePerKg(),
+                        item.pricePerKg().multiply(new BigDecimal(item.quantity()))
+                ))
+                .collect(Collectors.toList());
 
-        // Create and save the order
+        BigDecimal totalPrice = orderItems.stream()
+                .map(OrderItem::getItemTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         Order order = new Order();
         order.setBuyerId(request.buyerId());
-        order.setListingId(request.listingId());
-        order.setFarmerId(listing.farmerId());
-        order.setQuantity(request.quantity());
+        order.setItems(orderItems);
         order.setTotalPrice(totalPrice);
         order.setStatus(OrderStatus.PENDING);
 
         Order savedOrder = orderRepository.save(order);
+
+        List<OrderItemDTO> orderItemDTOs = savedOrder.getItems().stream()
+                .map(item -> new OrderItemDTO(
+                        item.getListingId(),
+                        item.getQuantity(),
+                        item.getPricePerKg(),
+                        item.getItemTotalPrice()
+                ))
+                .collect(Collectors.toList());
+
         return new OrderResponse(
                 savedOrder.getId(),
-                savedOrder.getListingId(),
-                savedOrder.getFarmerId(),
-                savedOrder.getQuantity(),
+                savedOrder.getBuyerId(),
+                orderItemDTOs,
                 savedOrder.getTotalPrice(),
                 savedOrder.getStatus()
         );
@@ -64,15 +82,16 @@ public class OrderService {
 
     public List<OrderResponse> getOrdersByBuyer(String buyerId) {
         List<Order> orders = orderRepository.findByBuyerId(buyerId);
-        return orders.stream()
-                .map(order -> new OrderResponse(
-                        order.getId(),
-                        order.getListingId(),
-                        order.getFarmerId(),
-                        order.getQuantity(),
-                        order.getTotalPrice(),
-                        order.getStatus()
-                ))
-                .collect(Collectors.toList());
+        return orders.stream().map(order -> {
+            List<OrderItemDTO> dtoItems = order.getItems().stream()
+                    .map(item -> new OrderItemDTO(
+                            item.getListingId(),
+                            item.getQuantity(),
+                            item.getPricePerKg(),
+                            item.getItemTotalPrice()))
+                    .collect(Collectors.toList());
+            return new OrderResponse(order.getId(), order.getBuyerId(), dtoItems,
+                    order.getTotalPrice(), order.getStatus());
+        }).collect(Collectors.toList());
     }
 }

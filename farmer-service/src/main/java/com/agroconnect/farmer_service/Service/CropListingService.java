@@ -66,4 +66,21 @@ public class CropListingService {
         cropListing.setQuantityAvailable(cropListing.getQuantityAvailable() - quantity);
         cropListingRepository.save(cropListing);
     }
+
+    public ListingResponse getListingById(String listingId) {
+        CropListing listing = cropListingRepository.findById(listingId)
+                .orElseThrow(() -> new RuntimeException("Listing not found for id: " + listingId));
+
+        return new ListingResponse(
+                listing.getId(),
+                listing.getFarmerId(),
+                listing.getCropName(),
+                listing.getCategory(),
+                listing.getPricePerKg(),
+                listing.getQuantityAvailable(),
+                listing.isOrganic(),
+                listing.getLocation()
+        );
+    }
+
 }

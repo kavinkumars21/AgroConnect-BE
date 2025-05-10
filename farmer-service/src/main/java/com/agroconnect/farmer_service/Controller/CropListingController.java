@@ -67,4 +67,11 @@ public class CropListingController {
         cropListingService.reduceQuantity(productId, quantity);
         return ResponseEntity.ok("Product quantity reduced successfully.");
     }
+
+    @GetMapping("/{listingId}")
+    public ResponseEntity<ListingResponse> getListingById(@PathVariable String listingId) {
+        ListingResponse dto = cropListingService.getListingById(listingId);
+        return ResponseEntity.ok(dto);
+    }
+
 }
