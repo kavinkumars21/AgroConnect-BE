@@ -33,7 +33,7 @@ public class OrderService {
 
         for (CartItemDTO item : cart.items()) {
             var listing = farmerServiceClient.getListingDetails(item.listingId());
-            if(item.quantity() > listing.getFirst().quantityAvailable()) {
+            if(item.quantity() > listing.quantityAvailable()) {
                 throw new RuntimeException("Insufficient stock for listing: " + item.listingId());
             }
         }

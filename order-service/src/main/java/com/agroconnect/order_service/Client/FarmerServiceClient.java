@@ -11,8 +11,8 @@ import java.util.List;
 @FeignClient(name = "farmer-service")
 public interface FarmerServiceClient {
 
-    @GetMapping("/api/listings/farmer/{listingId}")
-    List<ListingSummaryDTO> getListingDetails(@PathVariable String listingId);
+    @GetMapping("/api/listings/{listingId}")
+    ListingSummaryDTO getListingDetails(@PathVariable String listingId);
 
     @PutMapping("/api/listings/{productId}/reduce")
     void reduceProductQuantity(@PathVariable("productId") String productId,
