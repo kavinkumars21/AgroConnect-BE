@@ -10,5 +10,6 @@ public record ListingSummaryDTO(
         BigDecimal pricePerKg,
         int quantityAvailable,
         boolean isOrganic,
-        String location
+        String location,
+        String imageUrl
 ) {}

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.http.HttpRequest;
 import java.util.List;
@@ -24,7 +25,8 @@ public class CropListingController {
     private final JwtUtil jwtUtil;
 
     @PostMapping
-    public ResponseEntity<?> createListing(HttpServletRequest request, @RequestBody CreateListingDTO dto) {
+    public ResponseEntity<?> createListing(HttpServletRequest request, @RequestBody MultipartFile imageFile,
+                                           @ModelAttribute CreateListingDTO dto) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid authorization header");
@@ -48,7 +50,7 @@ public class CropListingController {
                 dto.isOrganic(),
                 dto.location()
         );
-        return ResponseEntity.ok(cropListingService.createListing(updatedDto));
+        return ResponseEntity.ok(cropListingService.createListing(updatedDto,imageFile));
     }
 
     @GetMapping

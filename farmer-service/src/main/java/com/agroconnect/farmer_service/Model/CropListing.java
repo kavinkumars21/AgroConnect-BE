@@ -21,4 +21,5 @@ public class CropListing {
     private int quantityAvailable;
     private boolean isOrganic;
     private String location;
+    private String imageUrl;
 }

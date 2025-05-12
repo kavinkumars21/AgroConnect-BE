@@ -6,6 +6,7 @@ import com.agroconnect.farmer_service.Model.CropListing;
 import com.agroconnect.farmer_service.Repository.CropListingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,8 +15,9 @@ import java.util.List;
 public class CropListingService {
 
     private final CropListingRepository cropListingRepository;
+    private final ImageUploadService imageUploadService;
 
-    public CropListing createListing(CreateListingDTO dto) {
+    public CropListing createListing(CreateListingDTO dto, MultipartFile imageFile) {
         var listing = new CropListing();
         listing.setFarmerId(dto.farmerId());
         listing.setCropName(dto.cropName());
@@ -24,6 +26,10 @@ public class CropListingService {
         listing.setQuantityAvailable(dto.quantityAvailable());
         listing.setOrganic(dto.isOrganic());
         listing.setLocation(dto.location());
+
+        String imageUrl = imageUploadService.uploadImage(imageFile);
+        listing.setImageUrl(imageUrl);
+
         return cropListingRepository.save(listing);
     }
 
@@ -37,7 +43,8 @@ public class CropListingService {
                         listing.getPricePerKg(),
                         listing.getQuantityAvailable(),
                         listing.isOrganic(),
-                        listing.getLocation()))
+                        listing.getLocation(),
+                        listing.getImageUrl()))
                 .toList();
     }
 
@@ -51,7 +58,8 @@ public class CropListingService {
                         listing.getPricePerKg(),
                         listing.getQuantityAvailable(),
                         listing.isOrganic(),
-                        listing.getLocation()))
+                        listing.getLocation(),
+                        listing.getImageUrl()))
                 .toList();
     }
 
@@ -79,7 +87,8 @@ public class CropListingService {
                 listing.getPricePerKg(),
                 listing.getQuantityAvailable(),
                 listing.isOrganic(),
-                listing.getLocation()
+                listing.getLocation(),
+                listing.getImageUrl()
         );
     }
 

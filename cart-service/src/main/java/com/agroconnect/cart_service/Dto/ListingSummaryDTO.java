@@ -10,5 +10,6 @@ public record ListingSummaryDTO(
     int quantityAvailable,
     boolean isOrganic,
     String location,
-    String farmerId
+    String farmerId,
+    String imageUrl
 ) {}
